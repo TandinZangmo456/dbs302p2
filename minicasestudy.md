@@ -40,8 +40,6 @@ All tasks were performed on the `ecommerce` database containing the following co
 | `orders`     | 2         | Customer purchase records        |
 | `reviews`    | 4         | Added in Task 1                  |
 
----
-
 ## 2. Task 1 — Reviews Collection with Average Rating Aggregation
 
 ### 2.1 Objective
@@ -148,7 +146,7 @@ db.reviews.aggregate([
 
 **Screenshot — Task 1: Reviews Aggregation Output:**
 
-![Task 1 Reviews Aggregation](screenshots/t1_reviews_aggregation.png)
+![alt text](minicasestudy/2.png)
 
 ### 2.6 Results
 
@@ -161,8 +159,6 @@ db.reviews.aggregate([
 ### 2.7 Analysis
 
 The aggregation pipeline correctly computed average ratings per product using `$avg` within the `$group` stage. The `$lookup` join against the `products` collection enriched the output with human-readable product names in place of raw ObjectIds. USB-C Cable 1m achieved the highest average rating of 5.0, while Wireless Bluetooth Headphones received 4.5 — consistent with the two individual ratings of 5 and 4 inserted. The `$round` operator in `$project` ensured clean numeric output.
-
----
 
 ## 3. Task 2 — Inventory-Focused Low Stock Query
 
@@ -205,7 +201,7 @@ db.products.insertMany([
 
 **Screenshot — Task 2: Low Stock Products Inserted:**
 
-![Task 2 Low Stock Insert](screenshots/t2_lowstock_insert.png)
+![alt text](minicasestudy/3.png)
 
 ### 3.3 Aggregation Pipeline — Low Stock Query
 
@@ -238,7 +234,7 @@ db.products.aggregate([
 
 **Screenshot — Task 2: Low Stock Query Output:**
 
-![Task 2 Low Stock Query](screenshots/t2_lowstock_query.png)
+![alt text](minicasestudy/4.png)
 
 ### 3.5 Results
 
@@ -251,8 +247,6 @@ db.products.aggregate([
 ### 3.6 Analysis
 
 The `$match` stage with `{ stock: { $lt: 10 } }` correctly filtered out the three original products (Headphones: 200, Cable: 500, Keyboard: 150) and returned only the three newly inserted low-stock items. The `$lookup` enriched each result with its category name, and the final `$sort` on `stock: 1` presented the results from lowest to highest stock level — Laptop Stand at 1 unit being the most urgent restocking priority.
-
----
 
 ## 4. Task 3 — Customer Segmentation by Spending Tier
 
@@ -329,11 +323,11 @@ db.users.find({}, { name: 1, totalSpent: 1, tier: 1, _id: 0 })
 
 **Screenshot — Task 3: Segmentation Pipeline Execution:**
 
-![Task 3 Segmentation Pipeline](screenshots/t3_segmentation_pipeline.png)
+![alt text](image.png)
 
 **Screenshot — Task 3: Tier Fields Written to Users Collection:**
 
-![Task 3 Segmentation Verified](screenshots/t3_segmentation_verify.png)
+![alt text](minicasestudy/6.png)
 
 ### 4.6 Results
 
@@ -345,8 +339,6 @@ db.users.find({}, { name: 1, totalSpent: 1, tier: 1, _id: 0 })
 ### 4.7 Analysis
 
 The `$switch` expression correctly evaluated each customer's `totalSpent` against the tier thresholds. Tashi Dorji's spend of USD 269.97 exceeded the Gold threshold of USD 200, while Sonam Choden's spend of USD 79.99 fell within the Silver range (≥ USD 50). The `$merge` stage successfully wrote the computed `tier` and `totalSpent` fields back into the respective user documents in the `users` collection, demonstrating MongoDB's capability to use aggregation pipelines as update mechanisms — avoiding a separate application-layer read-compute-write cycle.
-
----
 
 ## 5. Task 4 — Custom Index Experiments with explain()
 
@@ -365,8 +357,6 @@ db.products.find({
 }).explain("executionStats")
 ```
 
----
-
 ### 5.3 Experiment A — No Index (COLLSCAN)
 
 All non-default indexes were dropped before this experiment:
@@ -377,11 +367,11 @@ db.products.dropIndexes()
 
 **Screenshot — Task 4A: No Index (COLLSCAN):**
 
-![Task 4 No Index](screenshots/t4_no_index.png)
+![alt text](image.png)
 
 **Screenshot — Task 4A: No Index Execution Stats:**
 
-![Task 4 No Index Stats](screenshots/t4_no_index_stats.png)
+![alt text](minicasestudy/8.png)
 
 **Results:**
 
@@ -392,8 +382,6 @@ db.products.dropIndexes()
 | `totalKeysExamined`   | 0          |
 | `executionTimeMillis` | 0          |
 | `nReturned`           | 1          |
-
----
 
 ### 5.4 Experiment B — Single-Field Index on `attributes.brand`
 
@@ -406,11 +394,11 @@ db.products.createIndex(
 
 **Screenshot — Task 4B: Single-Field Index (IXSCAN):**
 
-![Task 4 Single Index](screenshots/t4_single_index.png)
+![alt text](minicasestudy/9.png)
 
 **Screenshot — Task 4B: Single-Field Index Execution Stats:**
 
-![Task 4 Single Index Stats](screenshots/t4_single_index_stats.png)
+![alt text](minicasestudy/10.png)
 
 **Results:**
 
@@ -425,8 +413,6 @@ db.products.createIndex(
 
 **Observation:** The single-field index on `attributes.brand` reduced `totalDocsExamined` from 6 to 1. However, the `color` filter was applied as a post-index FETCH stage filter — the index could only narrow the candidate set by brand, and color was checked in-document.
 
----
-
 ### 5.5 Experiment C — Compound Index on `attributes.brand` + `attributes.color`
 
 ```javascript
@@ -440,15 +426,15 @@ db.products.createIndex(
 
 **Screenshot — Task 4C: Compound Index (IXSCAN with tight bounds):**
 
-![Task 4 Compound Index](screenshots/t4_compound_index.png)
+![alt text](minicasestudy/12.png)
 
 **Screenshot — Task 4C: Compound Index Execution Stats:**
 
-![Task 4 Compound Stats](screenshots/t4_compound_stats.png)
+![alt text](minicasestudy/13.png)
 
 **Screenshot — Task 4C: Compound Index Bounds Detail:**
 
-![Task 4 Compound Stats 2](screenshots/t4_compound_stats2.png)
+![alt text](minicasestudy/14.png)
 
 **Results:**
 
@@ -463,25 +449,11 @@ db.products.createIndex(
 | `indexBounds.brand`   | `["Acme Audio","Acme Audio"]` |
 | `indexBounds.color`   | `["black","black"]`      |
 
----
-
-### 5.6 Comparative Summary
-
-| Metric                | No Index   | Single-Field Index | Compound Index |
-|-----------------------|------------|--------------------|----------------|
-| Plan Stage            | COLLSCAN   | IXSCAN             | IXSCAN         |
-| `totalDocsExamined`   | 6          | 1                  | 1              |
-| `totalKeysExamined`   | 0          | 1                  | 1              |
-| `executionTimeMillis` | 0          | 1                  | 1              |
-| Color filter applied  | In-memory  | Post-fetch         | Within index ✅|
-
-### 5.7 Analysis
+### 5.6 Analysis
 
 The COLLSCAN with no index examined all 6 documents in the collection regardless of their attribute values — a pattern that degrades linearly with collection growth. Both indexed experiments reduced `totalDocsExamined` to 1, representing a 6× improvement in document examination efficiency for this dataset.
 
 The key distinction between the single-field and compound indexes lies in how the `color` filter was handled. With the single-field index, MongoDB used the index to narrow candidates by `brand`, then applied the `color` filter during the FETCH stage as an in-document check. With the compound index, both `brand` and `color` constraints were encoded directly in the index bounds — `["Acme Audio","Acme Audio"]` and `["black","black"]` respectively — meaning the result was resolved entirely within the index without requiring a separate document-level filter. This is the principal advantage of a compound index over a single-field index when multiple equality conditions are present.
-
----
 
 ## 6. Task 5 — Text Search Enhancement with Description Field
 
@@ -522,7 +494,7 @@ db.products.updateOne(
 
 **Screenshot — Task 5: Description Fields Added:**
 
-![Task 5 Descriptions](screenshots/t5_descriptions.png)
+![alt text](minicasestudy/15.png)
 
 ### 6.3 Extended Text Index Creation
 
@@ -572,7 +544,7 @@ db.products.find(
 
 **Screenshot — Task 5: All Three Text Search Results:**
 
-![Task 5 Text Searches](screenshots/t5_text_searches.png)
+![alt text](minicasestudy/17.png)
 
 ### 6.5 Results
 
@@ -588,8 +560,6 @@ The relevance scoring behaviour confirmed the weight configuration was functioni
 
 This demonstrates that the weighted text index enables relevance-ranked search results that prioritise products whose names match search terms over those that match only in descriptions — a behaviour desirable in production e-commerce search experiences.
 
----
-
 ## 7. Discussion and Observations
 
 The following cross-cutting observations were drawn from the five tasks completed in this case study:
@@ -603,8 +573,6 @@ The following cross-cutting observations were drawn from the five tasks complete
 **On Text Index Weight Design:** Task 5 illustrated that text index weights directly control the relative influence of each indexed field on the final relevance score. A match in the `name` field (weight 10) produced a score approximately 8× higher than a match in the `description` field alone (weight 3), creating a natural ranking hierarchy that mirrors how users perceive search result relevance. The multi-term search for "ergonomic aluminium" demonstrated that MongoDB's text search tokenises and scores each term independently, accumulating scores across matching fields.
 
 **On the Attribute Pattern:** Throughout all five tasks, the `attributes` sub-document proved effective at accommodating heterogeneous product data — headphones carrying `batteryLifeHours`, cables carrying `lengthMeters`, and stands carrying `material` — all within a single `products` collection. The ability to create indexes directly on nested attribute fields (e.g., `"attributes.brand"`) without any schema restructuring demonstrates the practical value of the Attribute Pattern in a MongoDB e-commerce context.
-
----
 
 ## 8. Conclusion
 
